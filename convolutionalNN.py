@@ -5,11 +5,12 @@ def cnn_model_fn(features, labels, mode):
     """Model function for CNN."""
 
     # Input Layer
-    input_layer = tf.reshape(tf.cast(features["x"], tf.float32), [-1, 320, 240, 1])
+    #input_layer = tf.reshape(tf.cast(features["x"], tf.float32), [-1, 320, 240, 1])
+    x = tf.placeholder(tf.float32, shape=[16, 480, 640, 3], name='x')
 
     # Convolutional Layer #1
     conv1 = tf.layers.conv2d(
-        inputs=input_layer,
+        inputs=x,
         filters=32,
         kernel_size=[1, 5],
         padding="same",
@@ -41,7 +42,7 @@ def cnn_model_fn(features, labels, mode):
     pool3 = tf.layers.max_pooling2d(inputs=conv3, pool_size=[1, 2], strides=[1, 2])
 
     # Dense Layer
-    pool3_flat = tf.reshape(pool3, [-1, 154 * 5 * 2])
+    pool3_flat = tf.reshape(pool3, [16, 154 * 5 * 2])
 
     dense = tf.layers.dense(inputs=pool3_flat, units=512, activation=tf.nn.relu)
 

@@ -28,7 +28,7 @@ print imageArray.shape"""
 classes = ['forward', 'left', 'right', 'stop']
 num_classes = len(classes)
 
-train_path = 'dataSet/images/'
+train_path = 'dataSet/imgs/'
 
 # validation split
 validation_size = 0.2
@@ -36,7 +36,8 @@ validation_size = 0.2
 # batch size
 batch_size = 16
 
-data = dataset.read_train_sets(train_path, 640, classes, validation_size)
+data = dataset.read_train_sets(train_path, 128, 96, classes, validation_size)
+
 
 print("Complete reading input data. Will Now print a snippet of it")
 print("Number of files in Training-set:\t{}".format(len(data.train.labels)))
@@ -44,22 +45,22 @@ print("Number of files in Validation-set:\t{}".format(len(data.valid.labels)))
 
 session = tf.Session()
 
-x = tf.placeholder(tf.float32, shape=[batch_size, 640, 480, 3], name='x')
+x = tf.placeholder(tf.float32, shape=[batch_size, 96, 128, 3], name='x')
 
 layer_conv1 = cnn.create_convolutional_layer(input=x,
                                          num_input_channels=3,
-                                         conv_filter_size=5,
-                                         num_filters=3)
+                                         conv_filter_size=3,
+                                         num_filters=128)
 
 layer_conv2 = cnn.create_convolutional_layer(input=layer_conv1,
-                                         num_input_channels=3,
-                                         conv_filter_size=5,
-                                         num_filters=3)
+                                         num_input_channels=128,
+                                         conv_filter_size=3,
+                                         num_filters=128)
 
 layer_conv3 = cnn.create_convolutional_layer(input=layer_conv2,
-                                         num_input_channels=3,
-                                         conv_filter_size=5,
-                                         num_filters=3)
+                                         num_input_channels=128,
+                                         conv_filter_size=3,
+                                         num_filters=128)
 
 layer_flat = cnn.create_flatten_layer(layer_conv3)
 
@@ -71,7 +72,7 @@ layer_fc1 = cnn.create_fc_layer(input=layer_flat,
 layer_fc2 = cnn.create_fc_layer(input=layer_fc1,
                             num_inputs=32,
                             num_outputs=num_classes,
-                            use_relu=False)
+                            use_relu=True)
 
 y_true = tf.placeholder(tf.float32, shape=[None, num_classes], name='y_true')
 y_true_cls = tf.argmax(y_true, dimension=1)
@@ -80,12 +81,12 @@ y_pred = tf.nn.softmax(layer_fc2,name='y_pred')
 y_pred_cls = tf.argmax(y_pred, dimension=1)
 session.run(tf.global_variables_initializer())
 
-cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=layer_fc2,
+cross_entropy = tf.nn.softmax_cross_entropy_with_logits_v2(logits=layer_fc2,
                                                     labels=y_true)
 cost = tf.reduce_mean(cross_entropy)
 
-##### TESTING PREDICTION #####
 optimizer = tf.train.AdamOptimizer(learning_rate=1e-4).minimize(cost)
+optimizer2 = tf.train.GradientDescentOptimizer(learning_rate=0.01).minimize(cost)
 correct_prediction = tf.equal(y_pred_cls, y_true_cls)
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
@@ -101,6 +102,8 @@ saver = tf.train.Saver()
 
 def train(num_iteration):
     global total_iterations
+    initOp = tf.global_variables_initializer()
+    session.run(initOp)
 
     for i in range(total_iterations,
                    total_iterations + num_iteration):
@@ -115,13 +118,13 @@ def train(num_iteration):
 
         session.run(optimizer, feed_dict=feed_dict_tr)
 
-        if i % int(data.train.num_examples / batch_size) == 0:
-            val_loss = session.run(cost, feed_dict=feed_dict_val)
-            epoch = int(i / int(data.train.num_examples / batch_size))
+        val_loss = session.run(cost, feed_dict=feed_dict_val)
+        epoch = i
 
-            show_progress(epoch, feed_dict_tr, feed_dict_val, val_loss)
-            saver.save(session, 'dogs-cats-model')
+        show_progress(epoch, feed_dict_tr, feed_dict_val, val_loss)
+        saver.save(session, 'results/steering_model')
 
     total_iterations += num_iteration
 
-#train(50)
+session.run(tf.global_variables_initializer())
+train(500) # 250 IS ENOUGH
