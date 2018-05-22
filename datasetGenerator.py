@@ -7,7 +7,7 @@ cap = cv2.VideoCapture(1)
 
 numFrame = 0
 # Need to create the folder first
-path = 'dataSet/images/stop/'
+path = 'dataSet/images/stop_orig/'
 
 while(True):
     # Capture frame-by-frame
@@ -19,10 +19,10 @@ while(True):
 
     # Saves the current frame
     numFrame += 1
-    cv2.imwrite(os.path.join(path, '%d.jpg' % numFrame), bwframe)
+    cv2.imwrite(os.path.join(path, '%d.jpg' % numFrame), gray)
 
     # Display the resulting frame
-    cv2.imshow('frame', bwframe)
+    cv2.imshow('frame', gray)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 

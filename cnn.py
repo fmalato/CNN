@@ -51,3 +51,8 @@ def create_fc_layer(input, num_inputs, num_outputs, use_relu=True):
         layer = tf.nn.relu(layer)
 
     return layer
+
+def create_batch_normalization(input):
+    layer = tf.layers.batch_normalization(input)
+
+    return layer

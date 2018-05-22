@@ -20,7 +20,6 @@ def load_train(train_path, image_size_x, image_size_y, classes):
         path = os.path.join(train_path, fields, '*.jpg')
         for fl in glob.glob(path):
             image = cv2.imread(fl)
-            #image = cv2.resize(image, (64, 48), 0, 0, cv2.INTER_LINEAR)
             image = image.astype(np.float32)
             image = np.multiply(image, 1.0 / 255.0)
             images.append(image)
