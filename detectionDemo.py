@@ -72,12 +72,18 @@ saver.restore(sess, tf.train.latest_checkpoint('results/'))
 # Accessing the default graph which we have restored
 graph = tf.get_default_graph()
 
+classes = ['forward', 'left', 'right', 'stop']
+
 
 while(True):
     # Reading the image using OpenCV
     _, frame = cap.read()
+    ## Testing a single image
+    #frame = cv2.imread("dataSet/images/stop/192.jpg")
     # Resizing the image to our desired size and preprocessing will be done exactly as done during training
     image = cv2.resize(frame, (image_size_x, image_size_y), 0, 0, cv2.INTER_LINEAR)
+    grayTrue = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    image = cv2.Laplacian(image, cv2.CV_64F, ksize=31)
     #images.append(image)
     #images = np.array(images, dtype=np.uint8)
     #images = images.astype('float32')
@@ -98,19 +104,18 @@ while(True):
     ### Creating the feed_dict that is required to be fed to calculate y_pred
     feed_dict_testing = {x: x_batch, y_true: y_test_images}
     result=sess.run(y_pred, feed_dict=feed_dict_testing)
-    print(result)
+    #print(result)
 
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    _, bwframe = cv2.threshold(gray, 160, 255, cv2.THRESH_BINARY)  # SOGLIA CIRCA 220
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    _, bwframeOrig = cv2.threshold(gray, 160, 255, cv2.THRESH_BINARY)
+    """gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    _, bwframe = cv2.threshold(gray, 160, 255, cv2.THRESH_BINARY)  # SOGLIA CIRCA 220)
+    _, bwframeOrig = cv2.threshold(gray, 160, 255, cv2.THRESH_BINARY)"""
 
     resultArray = np.argmax(result)
 
-    cv2.putText(bwframeOrig,"Prediction: " + str(resultArray), (30, 350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, 230)
+    cv2.putText(grayTrue,"Prediction: " + str(classes[int(resultArray)]), (30, 350), cv2.FONT_HERSHEY_SIMPLEX, 0.5, 230)
 
     # Display the resulting frame
-    cv2.imshow('frame', bwframeOrig)
+    cv2.imshow('frame', grayTrue)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 

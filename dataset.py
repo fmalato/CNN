@@ -5,6 +5,7 @@ import itertools
 from sklearn.utils import shuffle
 import numpy as np
 import tensorflow as tf
+import random
 
 
 def load_train(train_path, image_size_x, image_size_y, classes):
@@ -20,6 +21,10 @@ def load_train(train_path, image_size_x, image_size_y, classes):
         path = os.path.join(train_path, fields, '*.jpg')
         for fl in glob.glob(path):
             image = cv2.imread(fl)
+            #image = cv2.Laplacian(image, cv2.CV_64F, ksize=1)
+            #image = cv2.Sobel(image, cv2.CV_64F, 0, 1, ksize=-1)
+            image = cv2.Canny(image, 100, 200)
+            #cv2.imshow('laplacian', image)
             image = image.astype(np.float32)
             image = np.multiply(image, 1.0 / 255.0)
             images.append(image)
